@@ -2,16 +2,17 @@
 @section('title', 'Edukasi HIV')
 
 @section('content')
-    <!-- Hero Section -->
-    {{-- create empty space for hero section and height 60 --}}
-
-    <section class="bg-gradient-to-r from-red-100 to-pink-100 py-16 px-6 text-center">
+    <section class="bg-white dark:bg-gray-900">
         <div class="h-16"></div>
-        <h1 class="text-4xl font-extrabold mb-4 text-red-700">EDUKASI TENTANG HIV</h1>
-        <p class="text-lg text-gray-700 max-w-2xl mx-auto">
-            Pahami lebih lanjut tentang HIV, cara penularan, gejala, pencegahan, serta pentingnya tes dan pengobatan.
-        </p>
+        <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
+            <h1
+                class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+                EDUKASI TENTANG HIV</h1>
+            <p class="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 lg:px-48 dark:text-gray-400">Di sini
+                kami memberikan informasi dan edukasi tentang HIV untuk meningkatkan kesadaran dan pemahaman masyarakat.</p>
+        </div>
     </section>
+
 
     <!-- Main Content -->
     <main class="container mx-auto p-6 space-y-12 max-w-screen-xl">
