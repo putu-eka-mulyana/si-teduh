@@ -1,17 +1,16 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PatientController;
+use App\Models\Patient;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('beranda');
 });
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::post('/login', function () {
-    return view('login');
-});
 
 Route::get('/edukasi-hiv', function () {
     return view('education-hiv');
@@ -26,21 +25,12 @@ Route::get('/admin', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard');
 
-Route::get('/admin/data-pasien', function () {
-    return view('admin.list-patient');
-})->name('admin.list-patient');
-
-Route::get('/admin/data-pasien/tambah', function () {
-    return view('admin.add-patient');
-})->name('admin.add-patient');
-Route::post('/admin/data-pasien/tambah', function () {
-    // Logic to handle adding a new patient
-    return redirect()->route('admin.list-patient');
-})->name('admin.store-patient');
-
-Route::get('/admin/data-pasien/edit/{id}', function ($id) {
-    return view('admin.edit-patient', ['id' => $id]);
-})->name('admin.edit-patient');
+Route::get('/admin/data-pasien', [PatientController::class, 'index'])->name('admin.list-patient');
+Route::get('/admin/data-pasien/tambah', [AuthController::class, 'showRegisterPatientForm'])->name('admin.add-patient');
+Route::post('/admin/data-pasien/tambah', [AuthController::class, 'register'])->name('admin.store-patient');
+Route::delete('/admin/data-pasien/{id}', [PatientController::class, 'destroy'])->name('admin.delete-patient');
+Route::get('/admin/data-pasien/edit/{id}', [PatientController::class, 'edit'])->name('admin.edit-patient');
+Route::post('/admin/data-pasien/edit/{id}', [PatientController::class, 'update'])->name('admin.update-patient');
 
 // page scheduling
 Route::get('/admin/data-jadwal', function () {

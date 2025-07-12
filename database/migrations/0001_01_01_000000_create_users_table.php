@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('phone_number', 20)->unique();
             $table->string('password');
-            $table->enum('role', ['PASIENT', 'ADMIN']);
+            $table->enum('role', ['USER', 'ADMIN']);
             $table->unsignedBigInteger('owner_id');
             $table->timestamps();
         });

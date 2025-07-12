@@ -24,10 +24,10 @@
             <form method="POST">
                 @csrf
                 <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" name="email" id="email" required
+                    <label for="phone_number" class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
+                    <input type="text" name="phone_number" id="phone_number" required
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        value="{{ old('email') }}">
+                        value="{{ old('phone_number') }}">
                 </div>
 
                 <div class="mb-6">
