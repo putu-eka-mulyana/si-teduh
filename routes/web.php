@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
 use App\Models\Patient;
@@ -48,6 +49,10 @@ Route::post('/admin/data-jadwal/tambah', function () {
 Route::get('/admin/data-jadwal/edit/{id}', function ($id) {
     return view('admin.edit-schedule', ['id' => $id]);
 })->name('admin.edit-schedule');
+
+Route::get('/admin/list', [AdminController::class, 'index'])->name('admin.list');
+Route::post('/admin/add', [AuthController::class, 'register'])->name('admin.store');
+Route::delete("/admin/delete/{id}", [AdminController::class, 'destroy'])->name("admin.destroy");
 
 
 // buat route untuk handle user view

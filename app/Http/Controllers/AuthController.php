@@ -43,7 +43,7 @@ class AuthController extends Controller
                 'address' => $request->address ?? '',
             ]);
             $owner_id = $patient->id;
-        } elseif ($request->role === 'admin') {
+        } elseif ($request->role === 'ADMIN') {
             $admin = Admin::create([
                 'jobtitle' => $request->jobtitle ?? '',
                 'fullname' => $request->fullname ?? '',
@@ -57,7 +57,10 @@ class AuthController extends Controller
             'owner_id' => $owner_id,
         ]);
 
-        return redirect()->route('admin.list-patient')->with('success', 'Register berhasil. Silakan login.');
+        if ($request->role == "USER") {
+            return redirect()->route('admin.list-patient')->with('success', 'Register berhasil. Silakan login.');
+        }
+        return redirect()->route('admin.list')->with('success', 'Register berhasil. Silakan login.');
     }
 
     public function login(Request $request)

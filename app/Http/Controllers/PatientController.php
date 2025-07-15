@@ -117,6 +117,7 @@ class PatientController extends Controller
     public function destroy(string $id)
     {
         $patient = Patient::findOrFail($id);
+        User::where("owner_id", $patient->id);
         $patient->delete();
 
         return redirect()->route('admin.list-patient')->with('success', 'Pasien berhasil dihapus.');

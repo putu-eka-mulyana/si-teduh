@@ -15,8 +15,8 @@ class Admin extends Model
     ];
 
     // Relasi dengan User
-    public function users()
+    public function user()
     {
-        return $this->hasMany(User::class, 'owner_id');
+        return $this->hasOne(User::class, 'owner_id');
     }
 }
