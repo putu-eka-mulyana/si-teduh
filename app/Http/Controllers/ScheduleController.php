@@ -27,11 +27,11 @@ class ScheduleController extends Controller
         }
 
         // Paginate
-        $schedule = $query->paginate($perPage);
+        $schedules = $query->orderBy('datetime', 'desc')->paginate($perPage);
         $total = $query->count();
 
         return view("admin.list-schedule", [
-            "schedule" => $schedule,
+            "schedules" => $schedules,
             "search" => $search,
             "perPage" => $perPage,
             "total" => $total,
@@ -90,7 +90,10 @@ class ScheduleController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $schedule = Schedule::find($id);
+        $schedule->status = 3;
+        $schedule->save();
+        return redirect()->route('admin.list-schedule');
     }
 
     /**

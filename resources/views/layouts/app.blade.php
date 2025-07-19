@@ -52,7 +52,14 @@
                             <a href="{{ route('admin.list-patient') }}"
                                 class="block py-2 px-3 rounded-sm md:p-0
                             {{ $currentRoute == 'admin.list-patient' ? 'text-white bg-blue-700 md:bg-transparent md:text-blue-700 md:dark:text-blue-500' : 'text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:text-blue-500 md:dark:hover:bg-transparent dark:border-gray-700' }}">
-                                Daftar pasien
+                                Daftar Pasien
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.list') }}"
+                                class="block py-2 px-3 rounded-sm md:p-0
+                            {{ $currentRoute == 'admin.list' ? 'text-white bg-blue-700 md:bg-transparent md:text-blue-700 md:dark:text-blue-500' : 'text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:text-blue-500 md:dark:hover:bg-transparent dark:border-gray-700' }}">
+                                Daftar Admin
                             </a>
                         </li>
                     </ul>

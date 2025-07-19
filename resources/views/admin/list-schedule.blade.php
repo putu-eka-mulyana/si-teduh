@@ -7,7 +7,7 @@
         <div class="h-20"></div>
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-black">Daftar Konseling</h2>
+            <h2 class="text-2xl font-bold text-black">Daftar Notifikasi</h2>
             <div class="flex gap-2">
                 <!-- Pencarian Konseling -->
                 <form method="GET" class="flex items-center gap-1">
@@ -45,11 +45,11 @@
                         <th class="px-6 py-3">Dokter/Perawat</th>
                         <th class="px-6 py-3 min-w-[200px]">Status Notifikasi</th>
                         <th class="px-6 py-3">Action</th>
-                        <th class="px-6 py-3">Pesan</th>
+                        <th class="px-6 py-3 max-w-[100px]">Pesan</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($schedule as $schedule)
+                    @foreach ($schedules as $schedule)
                         <tr class="border-b last:border-0 dark:border-gray-700">
                             <td class="px-6 py-4">{{ $schedule->patient->medical_record_number }}</td>
                             <td class="px-6 py-4">{{ $schedule->patient->fullname }}</td>
@@ -73,12 +73,33 @@
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">Hapus</button>
                                 </form> --}}
+                                {{-- buat buttin untuk update status selesai --}}
+                                @if ($schedule->status != 3)
+                                    <form action="{{ route('admin.update-schedule', $schedule->id) }}" method="POST"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menandai jadwal ini sebagai selesai?');">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit"
+                                            class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-1 text-center me-2 mb-2">Selesai</button>
+                                    </form>
+                                @endif
                             </td>
-                            <td class="px-6 py-4">{{ $schedule->message }}</td>
+                            <td class="px-6 py-4 max-w-[100px]">{{ $schedule->message }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
+        </div>
+        <div class="flex flex-col md:flex-row items-center justify-between mt-6 gap-2">
+            <span class="text-sm text-gray-600 dark:text-gray-400">
+                Menampilkan <span
+                    class="font-semibold text-gray-900">{{ $schedules->firstItem() }}-{{ $schedules->lastItem() }}</span>
+                dari
+                <span class="font-semibold text-gray-900">{{ $total }}</span>
+            </span>
+            <div class="mt-4 md:mt-0 gap-4">
+                {{ $schedules->links('pagination::tailwind') }}
+            </div>
         </div>
     </div>
 @endsection

@@ -45,6 +45,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/data-jadwal/edit/{id}', function ($id) {
         return view('admin.edit-schedule', ['id' => $id]);
     })->name('admin.edit-schedule');
+    Route::put('/data-jadwal/edit/{id}', [ScheduleController::class, 'update'])->name('admin.update-schedule');
 
     Route::get('/list', [AdminController::class, 'index'])->name('admin.list');
     Route::post('/add', [AuthController::class, 'register'])->name('admin.store');
