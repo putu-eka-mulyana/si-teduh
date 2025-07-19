@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\ScheduleController;
 use App\Models\Patient;
 use Illuminate\Support\Facades\Route;
 
@@ -34,17 +35,11 @@ Route::get('/admin/data-pasien/edit/{id}', [PatientController::class, 'edit'])->
 Route::post('/admin/data-pasien/edit/{id}', [PatientController::class, 'update'])->name('admin.update-patient');
 
 // page scheduling
-Route::get('/admin/data-jadwal', function () {
-    return view('admin.list-schedule');
-})->name('admin.list-schedule');
-
+Route::get('/admin/data-jadwal', [ScheduleController::class, 'index'])->name('admin.list-schedule');
 Route::get('/admin/data-jadwal/tambah', function () {
     return view('admin.add-schedule');
 })->name('admin.add-schedule');
-Route::post('/admin/data-jadwal/tambah', function () {
-    // Logic to handle adding a new schedule
-    return redirect()->route('admin.list-schedule');
-})->name('admin.store-schedule');
+Route::post('/admin/data-jadwal/tambah', [ScheduleController::class, 'store'])->name('admin.store-schedule');
 
 Route::get('/admin/data-jadwal/edit/{id}', function ($id) {
     return view('admin.edit-schedule', ['id' => $id]);

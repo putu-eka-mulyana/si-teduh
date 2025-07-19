@@ -122,4 +122,11 @@ class PatientController extends Controller
 
         return redirect()->route('admin.list-patient')->with('success', 'Pasien berhasil dihapus.');
     }
+
+    public function search(Request $request)
+    {
+        $search = $request->query('search');
+        $patients = Patient::where('medical_record_number', 'like', "%$search%")->limit(5)->get();
+        return response()->json($patients);
+    }
 }
