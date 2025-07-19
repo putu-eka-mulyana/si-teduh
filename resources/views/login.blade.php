@@ -7,7 +7,7 @@
             <h2 class="text-xl font-bold text-center mb-1">LOGIN</h2>
             <h2 class="text-2xl font-bold text-center mb-4">SI - TEDUH FOR ODHA</h2>
             <div class="flex justify-center mb-6">
-                <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="h-12 w-auto">
+                <img src="{{ url('/images/logo-puskesmas.png') }}" class="h-12 w-auto" alt="Puskesmas">
             </div>
 
 

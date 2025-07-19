@@ -1,4 +1,4 @@
-@extends('layouts.guest-app')
+@extends('layouts.app')
 @section('title', 'Edukasi HIV')
 
 @section('content')
