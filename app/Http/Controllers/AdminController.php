@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -52,7 +53,27 @@ class AdminController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'fullname' => 'required',
+            'phone_number' => 'required',
+            'jobtitle' => 'required',
+            'password' => 'required|min:6|confirmed',
+            "password_confirmation" => 'required_with:password|same:password',
+        ]);
+        $admin = Admin::findOrFail($id);
+        $admin->user->update([
+            'phone_number' => $request->phone_number,
+        ]);
+        $admin->update([
+            'fullname' => $request->fullname,
+            'jobtitle' => $request->jobtitle,
+        ]);
+        if ($request->password) {
+            $admin->user->update([
+                'password' => Hash::make($request->password),
+            ]);
+        }
+        return redirect()->route('admin.list')->with('success', 'Admin berhasil diupdate.');
     }
 
     /**

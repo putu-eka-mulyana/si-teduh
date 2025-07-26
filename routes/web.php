@@ -51,6 +51,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/list', [AdminController::class, 'index'])->name('admin.list');
     Route::post('/add', [AuthController::class, 'register'])->name('admin.store');
     Route::delete("/delete/{id}", [AdminController::class, 'destroy'])->name("admin.destroy");
+    Route::put('/edit/{id}', [AdminController::class, 'update'])->name('admin.update');
 });
 
 
