@@ -63,7 +63,7 @@
                             <td class="px-6 py-4">{{ $schedule->officer->position }} {{ $schedule->officer->fullname }}</td>
                             <td class="px-6 py-4">
                                 <span
-                                    class="text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm {{ $schedule->status == 1 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : ($schedule->status == 2 ? 'dark:bg-green-900 dark:text-green-300 bg-green-100 text-green-800' : 'dark:bg-gray-900 dark:text-gray-300 bg-gray-100 text-gray-800') }}">{{ $schedule->status == 1 ? 'Belum Dibaca' : ($schedule->status == 2 ? 'Sudah Dibaca' : 'Sesi Selesai') }}</span>
+                                    class="text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm {{ $schedule->status == 1 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : ($schedule->status == 2 ? 'dark:bg-green-900 dark:text-green-300 bg-green-100 text-green-800' : 'dark:bg-gray-900 dark:text-gray-300 bg-gray-100 text-gray-800') }}">{{ $schedule->status == 1 ? 'Menunggu Konfirmasi' : ($schedule->status == 2 ? 'Akan Datang' : 'Sesi Selesai') }}</span>
                             </td>
 
                             <td>

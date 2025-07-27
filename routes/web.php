@@ -4,10 +4,19 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\UserController;
 use App\Models\Patient;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        if (Auth::user()->role == 'ADMIN') {
+            return redirect()->route('admin.dashboard');
+        } else {
+            return redirect()->route('user-view');
+        }
+    }
     return redirect()->route('beranda');
 });
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -61,8 +70,7 @@ Route::middleware('role:ADMIN')->group(function () {
 // buat route untuk handle user view
 Route::middleware('role:USER')->group(function () {
     Route::prefix('user')->group(function () {
-        Route::get('/', function () {
-            return view('user-view');
-        })->name('user-view');
+        Route::get('/', [UserController::class, 'index'])->name('user-view');
     });
+    Route::post('/schedule/confirm/{id}', [UserController::class, 'update'])->name('schedule.confirm');
 });
