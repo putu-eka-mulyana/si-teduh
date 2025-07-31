@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\UserController;
 use App\Models\Patient;
@@ -12,9 +13,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     if (Auth::check()) {
         if (Auth::user()->role == 'ADMIN') {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.list-patient');
         } else {
-            return redirect()->route('user-view');
+            return redirect()->route('user.view');
         }
     }
     return redirect()->route('beranda');
@@ -37,14 +38,14 @@ Route::get('/beranda', function () {
 Route::middleware('role:ADMIN')->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('/', function () {
-            return view('admin.dashboard');
+            return redirect()->route('admin.list-patient');
         })->name('admin.dashboard');
         Route::get('/data-pasien', [PatientController::class, 'index'])->name('admin.list-patient');
         Route::get('/data-pasien/tambah', [AuthController::class, 'showRegisterPatientForm'])->name('admin.add-patient');
         Route::post('/data-pasien/tambah', [AuthController::class, 'register'])->name('admin.store-patient');
         Route::delete('/data-pasien/{id}', [PatientController::class, 'destroy'])->name('admin.delete-patient');
         Route::get('/data-pasien/edit/{id}', [PatientController::class, 'edit'])->name('admin.edit-patient');
-        Route::post('/data-pasien/edit/{id}', [PatientController::class, 'update'])->name('admin.update-patient');
+        Route::post('/data-pasien/edit/{id}', [AuthController::class, 'update'])->name('admin.update-patient');
 
         // page scheduling
         Route::get('/data-jadwal', [ScheduleController::class, 'index'])->name('admin.list-schedule');
@@ -70,7 +71,11 @@ Route::middleware('role:ADMIN')->group(function () {
 // buat route untuk handle user view
 Route::middleware('role:USER')->group(function () {
     Route::prefix('user')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('user-view');
+        Route::get('/', [UserController::class, 'index'])->name('user.view');
     });
     Route::post('/schedule/confirm/{id}', [UserController::class, 'update'])->name('schedule.confirm');
+
+    // Push subscription routes
+    Route::post('/api/push-subscription', [PushSubscriptionController::class, 'store'])->name('push.subscription.store');
+    Route::delete('/api/push-subscription', [PushSubscriptionController::class, 'destroy'])->name('push.subscription.destroy');
 });

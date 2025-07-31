@@ -73,9 +73,9 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             if (Auth::user()->role == 'ADMIN') {
-                return redirect()->intended('admin.list-patient');
+                return redirect()->route('admin.list-patient');
             } else {
-                return redirect()->intended('user-view');
+                return redirect()->route('user.view');
             }
         }
 

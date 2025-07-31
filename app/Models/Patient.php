@@ -25,4 +25,9 @@ class Patient extends Model
     {
         return $this->hasMany(Schedule::class);
     }
+
+    public function user()
+    {
+        return $this->hasOne(User::class, 'owner_id');
+    }
 }

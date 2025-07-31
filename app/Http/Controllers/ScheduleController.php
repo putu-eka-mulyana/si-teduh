@@ -58,6 +58,7 @@ class ScheduleController extends Controller
             'type' => 'required|string',
             'message' => 'required|string',
         ]);
+
         Schedule::create([
             'patient_id' => $request->input('patient_id'),
             'datetime' => $request->input('session_time'),
@@ -66,6 +67,7 @@ class ScheduleController extends Controller
             'type' => $request->input('type'),
             'message' => $request->input('message'),
         ]);
+
         return redirect()->route("admin.list-schedule");
     }
 

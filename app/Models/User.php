@@ -12,8 +12,6 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    use HasFactory;
-
     protected $fillable = [
         'phone_number',
         'password',
@@ -34,5 +32,13 @@ class User extends Authenticatable
     public function admin()
     {
         return $this->belongsTo(Admin::class, 'owner_id');
+    }
+
+    /**
+     * Get the push subscriptions for the user.
+     */
+    public function pushSubscriptions()
+    {
+        return $this->hasMany(PushSubscription::class);
     }
 }
