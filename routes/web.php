@@ -78,4 +78,7 @@ Route::middleware('role:USER')->group(function () {
     // Push subscription routes
     Route::post('/api/push-subscription', [PushSubscriptionController::class, 'store'])->name('push.subscription.store');
     Route::delete('/api/push-subscription', [PushSubscriptionController::class, 'destroy'])->name('push.subscription.destroy');
+
+    // Test web push route
+    Route::get('/test/webpush', [PushSubscriptionController::class, 'test'])->name('push.subscription.test');
 });

@@ -3,13 +3,20 @@ class PushNotificationHandler {
   constructor() {
     this.isSupported = 'serviceWorker' in navigator && 'PushManager' in window;
     this.swRegistration = null;
-    this.applicationServerKey = this.urlBase64ToUint8Array('YOUR_VAPID_PUBLIC_KEY'); // Ganti dengan VAPID key Anda
+    this.applicationServerKey = this.urlBase64ToUint8Array('BIChEW_RHFX8MDiVsQrSFOBE_yOGFxRkrjlBX_pquRBXWMmH1pL2q94Srp_vxRdF9HEWx1yYPetLsEovODx9oIQ');
+    this.isInitialized = false;
   }
 
   async init() {
+    console.log('Inisialisasi push notification...');
     if (!this.isSupported) {
       console.log('Push notification tidak didukung di browser ini');
       return false;
+    }
+
+    if (this.isInitialized) {
+      console.log('Push notification sudah diinisialisasi');
+      return true;
     }
 
     try {
@@ -17,23 +24,48 @@ class PushNotificationHandler {
       this.swRegistration = await navigator.serviceWorker.register('/sw.js');
       console.log('Service Worker registered');
 
-      // Request notification permission
-      const permission = await this.requestNotificationPermission();
+      // Check current permission status
+      const permission = Notification.permission;
+
       if (permission === 'granted') {
         await this.subscribeUser();
         this.setupEchoListener();
+        this.isInitialized = true;
+        console.log('Push notification initialized successfully');
+        return true;
+      } else if (permission === 'denied') {
+        console.log('Notification permission denied');
+        return false;
+      } else {
+        // Permission is 'default' - show modal
+        console.log('Requesting notification permission via modal');
+        return false;
       }
-
-      return true;
     } catch (error) {
       console.error('Error initializing push notification:', error);
       return false;
     }
   }
 
-  async requestNotificationPermission() {
-    const permission = await Notification.requestPermission();
-    return permission;
+  async requestPermissionAndSubscribe() {
+    try {
+      const permission = await Notification.requestPermission();
+      console.log('Permission result:', permission);
+
+      if (permission === 'granted') {
+        await this.subscribeUser();
+        this.setupEchoListener();
+        this.isInitialized = true;
+        console.log('User subscribed to push notifications');
+        return true;
+      } else {
+        console.log('Permission denied by user');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error requesting permission:', error);
+      return false;
+    }
   }
 
   async subscribeUser() {
@@ -82,12 +114,16 @@ class PushNotificationHandler {
 
   showNotification(notification) {
     if (Notification.permission === 'granted') {
+      console.log('Showing notification:', notification);
+
       const options = {
-        body: notification.body,
+        body: notification.body || 'Anda memiliki notifikasi baru',
         icon: notification.icon || '/images/logo-puskesmas.png',
         badge: notification.badge || '/images/logo-puskesmas.png',
-        data: notification.data,
+        data: notification.data || { url: '/user' },
         requireInteraction: true,
+        tag: 'si-teduh-notification',
+        renotify: true,
         actions: [
           {
             action: 'view',
@@ -100,22 +136,129 @@ class PushNotificationHandler {
         ]
       };
 
-      const pushNotification = new Notification(notification.title, options);
+      console.log('Notification options:', options);
 
-      pushNotification.onclick = function (event) {
-        event.preventDefault();
-        if (notification.data && notification.data.url) {
-          window.open(notification.data.url, '_blank');
+      try {
+        const pushNotification = new Notification(notification.title || 'SI TEDUH', options);
+        console.log('Notification created successfully');
+
+        pushNotification.onclick = function (event) {
+          event.preventDefault();
+          console.log('Notification clicked');
+          if (notification.data && notification.data.url) {
+            window.open(notification.data.url, '_blank');
+          }
+          pushNotification.close();
+        };
+
+        pushNotification.onaction = function (event) {
+          console.log('Notification action clicked:', event.action);
+          if (event.action === 'view' && notification.data && notification.data.url) {
+            window.open(notification.data.url, '_blank');
+          }
+          pushNotification.close();
+        };
+
+        pushNotification.onshow = function () {
+          console.log('Notification shown');
+        };
+
+        pushNotification.onerror = function (error) {
+          console.error('Notification error:', error);
+        };
+
+      } catch (error) {
+        console.error('Error creating notification:', error);
+        // Fallback: coba buat notifikasi sederhana
+        try {
+          new Notification(notification.title || 'SI TEDUH', {
+            body: notification.body || 'Anda memiliki notifikasi baru',
+            icon: '/images/logo-puskesmas.png'
+          });
+        } catch (fallbackError) {
+          console.error('Fallback notification also failed:', fallbackError);
         }
-        pushNotification.close();
+      }
+    } else {
+      console.log('Notification permission not granted:', Notification.permission);
+    }
+  }
+
+  // Method untuk testing notifikasi
+  testNotification() {
+    console.log('Testing notification...');
+    const testData = {
+      title: 'Test Notifikasi SI TEDUH',
+      body: 'Ini adalah notifikasi test untuk memastikan sistem berfungsi dengan baik.',
+      icon: '/images/logo-puskesmas.png',
+      data: {
+        url: '/user'
+      }
+    };
+
+    this.showNotification(testData);
+  }
+
+  // Method untuk mengirim notifikasi test ke service worker
+  async sendTestPushNotification() {
+    if (!this.swRegistration) {
+      console.error('Service Worker not registered');
+      return false;
+    }
+
+    try {
+      // Simulasi push notification
+      const testData = {
+        title: 'Test Push Notification',
+        body: 'Ini adalah test push notification dari service worker',
+        icon: '/images/logo-puskesmas.png',
+        data: {
+          url: '/user'
+        }
       };
 
-      pushNotification.onaction = function (event) {
-        if (event.action === 'view' && notification.data && notification.data.url) {
-          window.open(notification.data.url, '_blank');
-        }
-        pushNotification.close();
-      };
+      console.log('Sending test data to service worker:', testData);
+
+      // Kirim message ke service worker
+      if (this.swRegistration.active) {
+        this.swRegistration.active.postMessage({
+          type: 'TEST_PUSH',
+          data: testData
+        });
+        console.log('Test message sent to service worker');
+      } else {
+        console.error('Service worker not active');
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error sending test push notification:', error);
+      return false;
+    }
+  }
+
+  // Method untuk force refresh service worker
+  async forceRefreshServiceWorker() {
+    try {
+      if (this.swRegistration) {
+        await this.swRegistration.update();
+        console.log('Service worker updated');
+
+        // Wait for new service worker to activate
+        await new Promise((resolve) => {
+          if (this.swRegistration.waiting) {
+            this.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          resolve();
+        });
+
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error refreshing service worker:', error);
+      return false;
     }
   }
 
@@ -135,8 +278,12 @@ class PushNotificationHandler {
   }
 }
 
-// Initialize push notification when DOM is loaded
+// Initialize push notification handler when DOM is loaded
 document.addEventListener('DOMContentLoaded', function () {
-  const pushHandler = new PushNotificationHandler();
-  pushHandler.init();
+  window.pushHandler = new PushNotificationHandler();
+
+  // Try to initialize if permission already granted
+  if (Notification.permission === 'granted') {
+    window.pushHandler.init();
+  }
 }); 
