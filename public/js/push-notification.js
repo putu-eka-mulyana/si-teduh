@@ -3,7 +3,7 @@ class PushNotificationHandler {
   constructor() {
     this.isSupported = 'serviceWorker' in navigator && 'PushManager' in window;
     this.swRegistration = null;
-    this.applicationServerKey = this.urlBase64ToUint8Array('BIChEW_RHFX8MDiVsQrSFOBE_yOGFxRkrjlBX_pquRBXWMmH1pL2q94Srp_vxRdF9HEWx1yYPetLsEovODx9oIQ');
+    this.applicationServerKey = this.urlBase64ToUint8Array('BFZphZCNYOF_TeaMByns2sc1dKyLLDkkZCojA5tsCXd1_JDj-JX7l2VfTMg_0qU7RoYRO89uTRUtyAmxAgEWkhY');
     this.isInitialized = false;
   }
 

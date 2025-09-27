@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendWebPushNotificationJob;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 
@@ -59,7 +60,7 @@ class ScheduleController extends Controller
             'message' => 'required|string',
         ]);
 
-        Schedule::create([
+        $schedule = Schedule::create([
             'patient_id' => $request->input('patient_id'),
             'datetime' => $request->input('session_time'),
             'officer_id' => $request->input('officer_id'),
@@ -67,6 +68,9 @@ class ScheduleController extends Controller
             'type' => $request->input('type'),
             'message' => $request->input('message'),
         ]);
+
+        // Kirim web push notification ke user
+        SendWebPushNotificationJob::dispatch($schedule);
 
         return redirect()->route("admin.list-schedule");
     }

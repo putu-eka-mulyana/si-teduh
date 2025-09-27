@@ -82,3 +82,15 @@ Route::middleware('role:USER')->group(function () {
     // Test web push route
     Route::get('/test/webpush', [PushSubscriptionController::class, 'test'])->name('push.subscription.test');
 });
+
+// Web Push Testing Routes (accessible by all authenticated users)
+Route::middleware('auth')->group(function () {
+    Route::get('/webpush-test', function () {
+        return view('webpush-test');
+    })->name('webpush.test');
+});
+
+// Public testing route (for development/testing purposes)
+Route::get('/webpush-test-public', function () {
+    return view('webpush-test');
+})->name('webpush.test.public');
