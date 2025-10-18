@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Script untuk test push notification dari cron job (implementasi baru)
-# Test ini akan memverifikasi bahwa SendWebPushNotificationJob sekarang menggunakan WebPush library langsung
+# Script sederhana untuk test push notification dari cron job
+# Script ini tidak bergantung pada API endpoints yang memerlukan autentikasi
 
-echo "🧪 Testing Cron Job Push Notification (New Implementation)"
-echo "=========================================================="
+echo "🧪 Simple Cron Job Push Notification Test"
+echo "=========================================="
 echo ""
 
 # Warna untuk output
@@ -68,93 +68,53 @@ else
     print_success "Queue worker is running"
 fi
 
-# Cek VAPID configuration
+# Cek VAPID configuration langsung dari environment
 print_status "Checking VAPID configuration..."
+vapid_public=$(php artisan tinker --execute="echo env('VAPID_PUBLIC_KEY');")
+vapid_private=$(php artisan tinker --execute="echo env('VAPID_PRIVATE_KEY');")
+vapid_subject=$(php artisan tinker --execute="echo env('VAPID_SUBJECT');")
 
-# Coba akses endpoint tanpa auth dulu
-vapid_response=$(curl -s $SERVER_URL/api/webpush-test/vapid-config)
-if echo "$vapid_response" | grep -q '"success":true'; then
-    print_success "VAPID configuration is valid"
-elif echo "$vapid_response" | grep -q "signin\|login\|unauthorized"; then
-    print_warning "API endpoint requires authentication. Checking VAPID config directly..."
-    
-    # Cek VAPID config langsung dari environment
-    vapid_public=$(php artisan tinker --execute="echo env('VAPID_PUBLIC_KEY');")
-    vapid_private=$(php artisan tinker --execute="echo env('VAPID_PRIVATE_KEY');")
-    vapid_subject=$(php artisan tinker --execute="echo env('VAPID_SUBJECT');")
-    
-    if [ -n "$vapid_public" ] && [ -n "$vapid_private" ] && [ -n "$vapid_subject" ]; then
-        print_success "VAPID configuration found in environment"
-        echo "  Public Key: ${vapid_public:0:20}..."
-        echo "  Private Key: ${vapid_private:0:20}..."
-        echo "  Subject: $vapid_subject"
-    else
-        print_error "VAPID configuration is missing in environment"
-        echo "Missing:"
-        [ -z "$vapid_public" ] && echo "  - VAPID_PUBLIC_KEY"
-        [ -z "$vapid_private" ] && echo "  - VAPID_PRIVATE_KEY"
-        [ -z "$vapid_subject" ] && echo "  - VAPID_SUBJECT"
-        exit 1
-    fi
+if [ -n "$vapid_public" ] && [ -n "$vapid_private" ] && [ -n "$vapid_subject" ]; then
+    print_success "VAPID configuration found in environment"
+    echo "  Public Key: ${vapid_public:0:20}..."
+    echo "  Private Key: ${vapid_private:0:20}..."
+    echo "  Subject: $vapid_subject"
 else
-    print_error "VAPID configuration check failed"
-    echo "Response: $vapid_response"
+    print_error "VAPID configuration is missing in environment"
+    echo "Missing:"
+    [ -z "$vapid_public" ] && echo "  - VAPID_PUBLIC_KEY"
+    [ -z "$vapid_private" ] && echo "  - VAPID_PRIVATE_KEY"
+    [ -z "$vapid_subject" ] && echo "  - VAPID_SUBJECT"
     exit 1
 fi
 
-# Cek subscription statistics
+# Cek subscriptions langsung dari database
 print_status "Checking subscription statistics..."
-stats_response=$(curl -s $SERVER_URL/api/webpush-test/stats)
-if echo "$stats_response" | grep -q '"total_subscriptions"'; then
-    total_subscriptions=$(echo "$stats_response" | grep -o '"total_subscriptions":[0-9]*' | grep -o '[0-9]*')
-    if [ "$total_subscriptions" -gt 0 ]; then
-        print_success "Found $total_subscriptions active subscription(s)"
-    else
-        print_warning "No active subscriptions found. User needs to subscribe first."
-        echo ""
-        echo "To subscribe:"
-        echo "1. Open browser: $SERVER_URL/webpush-test-public"
-        echo "2. Click 'Request Permission' button"
-        echo "3. Allow notifications when prompted"
-        echo ""
-        read -p "Press Enter after user has subscribed, or Ctrl+C to exit..."
-    fi
-elif echo "$stats_response" | grep -q "signin\|login\|unauthorized"; then
-    print_warning "API endpoint requires authentication. Checking subscriptions directly..."
+subscription_count=$(php artisan tinker --execute="echo \App\Models\PushSubscription::count();")
+if [ "$subscription_count" -gt 0 ]; then
+    print_success "Found $subscription_count active subscription(s) in database"
     
-    # Cek subscriptions langsung dari database
-    subscription_count=$(php artisan tinker --execute="echo \App\Models\PushSubscription::count();")
-    if [ "$subscription_count" -gt 0 ]; then
-        print_success "Found $subscription_count active subscription(s) in database"
-    else
-        print_warning "No active subscriptions found in database. User needs to subscribe first."
-        echo ""
-        echo "To subscribe:"
-        echo "1. Open browser: $SERVER_URL/webpush-test-public"
-        echo "2. Click 'Request Permission' button"
-        echo "3. Allow notifications when prompted"
-        echo ""
-        read -p "Press Enter after user has subscribed, or Ctrl+C to exit..."
-    fi
+    # Tampilkan detail subscriptions
+    echo ""
+    echo "Subscription details:"
+    php artisan tinker --execute="
+    \$subscriptions = \App\Models\PushSubscription::with('user')->get();
+    foreach (\$subscriptions as \$sub) {
+        echo 'User ID: ' . \$sub->user_id . ' | Endpoint: ' . substr(\$sub->endpoint, 0, 50) . '...' . PHP_EOL;
+    }
+    "
 else
-    print_error "Failed to check subscription statistics"
-    echo "Response: $stats_response"
+    print_warning "No active subscriptions found in database. User needs to subscribe first."
+    echo ""
+    echo "To subscribe:"
+    echo "1. Open browser: $SERVER_URL/webpush-test-public"
+    echo "2. Click 'Request Permission' button"
+    echo "3. Allow notifications when prompted"
+    echo ""
+    read -p "Press Enter after user has subscribed, or Ctrl+C to exit..."
 fi
 
-# Test 1: Create a test schedule and dispatch job
-print_status "Creating test schedule..."
-test_schedule_data='{
-    "patient_id": 1,
-    "session_time": "'$(date -d '+2 hours' '+%Y-%m-%d %H:%M:%S')'",
-    "officer_id": 1,
-    "type": "Test Konsultasi",
-    "message": "Test notification dari cron job implementasi baru"
-}'
-
-# Simulate creating schedule (you might need to adjust this based on your auth setup)
-print_status "Simulating schedule creation and job dispatch..."
-
-# Test 2: Dispatch job manually untuk testing
+# Test: Dispatch job manually untuk testing
 print_status "Dispatching SendWebPushNotificationJob manually for testing..."
 
 # Buat schedule test di database
@@ -182,7 +142,7 @@ else
     exit 1
 fi
 
-# Monitor queue logs
+# Monitor queue processing
 print_status "Monitoring queue processing..."
 echo "Waiting for job to be processed..."
 sleep 5
@@ -198,7 +158,7 @@ else
     print_warning "Laravel log file not found"
 fi
 
-# Test 3: Verify notification was sent
+# Test verification
 print_status "Checking if notification was sent successfully..."
 echo ""
 echo "Manual verification steps:"
