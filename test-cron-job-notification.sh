@@ -164,7 +164,7 @@ php artisan tinker --execute="
     'datetime' => now()->addHours(1),
     'officer_id' => 1,
     'status' => 1,
-    'type' => 'Test Konsultasi',
+    'type' => 'konsultasi',
     'message' => 'Test notification dari cron job implementasi baru'
 ]);
 
@@ -210,7 +210,7 @@ echo ""
 # Cleanup test schedule
 print_status "Cleaning up test schedule..."
 php artisan tinker --execute="
-\$schedule = \App\Models\Schedule::where('type', 'Test Konsultasi')->where('message', 'Test notification dari cron job implementasi baru')->first();
+\$schedule = \App\Models\Schedule::where('type', 'konsultasi')->where('message', 'Test notification dari cron job implementasi baru')->first();
 if (\$schedule) {
     \$schedule->delete();
     echo 'Test schedule cleaned up' . PHP_EOL;

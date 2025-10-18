@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Script sederhana untuk test push notification dari cron job
-# Script ini tidak bergantung pada API endpoints yang memerlukan autentikasi
+# Script untuk test push notification dengan validasi enum values
+# Script ini akan menggunakan nilai yang valid untuk kolom 'type' di tabel schedules
 
-echo "🧪 Simple Cron Job Push Notification Test"
+echo "🧪 Cron Job Push Notification Test (Fixed)"
 echo "=========================================="
 echo ""
 
@@ -114,25 +114,36 @@ else
     read -p "Press Enter after user has subscribed, or Ctrl+C to exit..."
 fi
 
+# Cek valid enum values untuk kolom type
+print_status "Checking valid schedule types..."
+echo ""
+echo "Valid schedule types: edukasi, konsultasi, ambil obat"
+echo "Using 'konsultasi' for test..."
+
 # Test: Dispatch job manually untuk testing
 print_status "Dispatching SendWebPushNotificationJob manually for testing..."
 
-# Buat schedule test di database
+# Buat schedule test di database dengan nilai yang valid
 php artisan tinker --execute="
-\$schedule = \App\Models\Schedule::create([
-    'patient_id' => 1,
-    'datetime' => now()->addHours(1),
-    'officer_id' => 1,
-    'status' => 1,
-    'type' => 'konsultasi',
-    'message' => 'Test notification dari cron job implementasi baru'
-]);
+try {
+    \$schedule = \App\Models\Schedule::create([
+        'patient_id' => 1,
+        'datetime' => now()->addHours(1),
+        'officer_id' => 1,
+        'status' => 1,
+        'type' => 'konsultasi',
+        'message' => 'Test notification dari cron job implementasi baru'
+    ]);
 
-echo 'Schedule created with ID: ' . \$schedule->id . PHP_EOL;
+    echo 'Schedule created with ID: ' . \$schedule->id . PHP_EOL;
 
-// Dispatch job
-\App\Jobs\SendWebPushNotificationJob::dispatch(\$schedule);
-echo 'Job dispatched successfully' . PHP_EOL;
+    // Dispatch job
+    \App\Jobs\SendWebPushNotificationJob::dispatch(\$schedule);
+    echo 'Job dispatched successfully' . PHP_EOL;
+} catch (Exception \$e) {
+    echo 'Error: ' . \$e->getMessage() . PHP_EOL;
+    exit(1);
+}
 "
 
 if [ $? -eq 0 ]; then
@@ -183,7 +194,7 @@ echo ""
 echo "🎯 Test Summary:"
 echo "================"
 echo "✅ SendWebPushNotificationJob has been updated to use WebPush library directly"
-echo "✅ Job dispatched successfully"
+echo "✅ Job dispatched successfully with valid enum value"
 echo "✅ Queue worker processed the job"
 echo ""
 echo "📋 Next Steps:"
@@ -196,5 +207,6 @@ echo "- Removed dependency on broadcast channel"
 echo "- Added direct WebPush library usage"
 echo "- Added comprehensive logging"
 echo "- Added error handling and subscription cleanup"
+echo "- Fixed enum value validation for schedule type"
 echo ""
 print_success "Test completed! Check your device for the notification."
