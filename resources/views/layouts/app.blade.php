@@ -9,7 +9,7 @@
     @vite('resources/css/app.css')
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col">
     <nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <a href="{{ route('beranda') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
@@ -129,11 +129,11 @@
         </div>
     </nav>
 
-    <main>
+    <main class="flex-1 pt-16">
         @yield('content') <!-- Tempat konten dinamis ditampilkan -->
     </main>
 
-    <footer class="bg-gray-800">
+    <footer class="bg-gray-800 mt-auto">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <div class="text-white text-center py-4">
                 <p>&copy; {{ date('Y') }} Puskesmas Karang Pule</p>
