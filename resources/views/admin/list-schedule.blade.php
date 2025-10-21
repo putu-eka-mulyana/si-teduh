@@ -2,7 +2,6 @@
 @section('title', 'List Counseling')
 
 @section('content')
-    // edit styling mengguknan flowbit css
     <div class="container mx-auto px-4 py-6">
         <div class="h-20"></div>
         <!-- Header -->
