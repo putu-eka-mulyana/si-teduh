@@ -113,16 +113,16 @@ class ScheduleController extends Controller
         ]);
 
         try {
-            $job = SendWebPushNotificationJob::dispatch($schedule);
-            
-            $jobId = method_exists($job, 'getJobId') ? $job->getJobId() : (property_exists($job, 'job') ? $job->job->getJobId() : 'unknown');
-            
+            SendWebPushNotificationJob::dispatch($schedule);
+
             Log::info('=== PUSH NOTIFICATION DEBUG: Job Dispatched Successfully ===', [
                 'step' => 'JOB_DISPATCHED',
                 'schedule_id' => $schedule->id,
-                'job_id' => $jobId,
+                'job_class' => 'SendWebPushNotificationJob',
                 'queue_connection' => config('queue.default'),
-                'timestamp' => now()->toDateTimeString()
+                'queue_name' => config('queue.connections.' . config('queue.default') . '.queue', 'default'),
+                'timestamp' => now()->toDateTimeString(),
+                'note' => 'Job ID will be available in job handle() method'
             ]);
         } catch (\Exception $e) {
             Log::error('=== PUSH NOTIFICATION DEBUG: Job Dispatch Failed ===', [
