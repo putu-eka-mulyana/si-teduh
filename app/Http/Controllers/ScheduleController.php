@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\SendWebPushNotificationJob;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ScheduleController extends Controller
 {
@@ -52,12 +53,29 @@ class ScheduleController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('=== PUSH NOTIFICATION DEBUG: Schedule Creation Started ===', [
+            'step' => 'SCHEDULE_CREATE_START',
+            'request_data' => $request->all(),
+            'timestamp' => now()->toDateTimeString()
+        ]);
+
         $request->validate([
             'patient_id' => 'required|exists:users,id',
             'session_time' => 'required',
             'officer_id' => 'required|exists:users,id',
             'type' => 'required|string',
             'message' => 'required|string',
+        ]);
+
+        Log::info('=== PUSH NOTIFICATION DEBUG: Validation Passed ===', [
+            'step' => 'VALIDATION_PASSED',
+            'validated_data' => [
+                'patient_id' => $request->input('patient_id'),
+                'session_time' => $request->input('session_time'),
+                'officer_id' => $request->input('officer_id'),
+                'type' => $request->input('type'),
+                'message' => $request->input('message'),
+            ]
         ]);
 
         $schedule = Schedule::create([
@@ -69,8 +87,57 @@ class ScheduleController extends Controller
             'message' => $request->input('message'),
         ]);
 
+        Log::info('=== PUSH NOTIFICATION DEBUG: Schedule Created Successfully ===', [
+            'step' => 'SCHEDULE_CREATED',
+            'schedule_id' => $schedule->id,
+            'schedule_data' => [
+                'id' => $schedule->id,
+                'patient_id' => $schedule->patient_id,
+                'officer_id' => $schedule->officer_id,
+                'datetime' => $schedule->datetime,
+                'type' => $schedule->type,
+                'status' => $schedule->status,
+                'message' => $schedule->message,
+                'created_at' => $schedule->created_at,
+            ],
+            'queue_connection' => config('queue.default'),
+            'queue_name' => config('queue.connections.' . config('queue.default') . '.queue', 'default')
+        ]);
+
         // Kirim web push notification ke user
-        SendWebPushNotificationJob::dispatch($schedule);
+        Log::info('=== PUSH NOTIFICATION DEBUG: Dispatching Job to Queue ===', [
+            'step' => 'JOB_DISPATCH_START',
+            'schedule_id' => $schedule->id,
+            'job_class' => 'SendWebPushNotificationJob',
+            'before_dispatch' => true
+        ]);
+
+        try {
+            $job = SendWebPushNotificationJob::dispatch($schedule);
+            
+            $jobId = method_exists($job, 'getJobId') ? $job->getJobId() : (property_exists($job, 'job') ? $job->job->getJobId() : 'unknown');
+            
+            Log::info('=== PUSH NOTIFICATION DEBUG: Job Dispatched Successfully ===', [
+                'step' => 'JOB_DISPATCHED',
+                'schedule_id' => $schedule->id,
+                'job_id' => $jobId,
+                'queue_connection' => config('queue.default'),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('=== PUSH NOTIFICATION DEBUG: Job Dispatch Failed ===', [
+                'step' => 'JOB_DISPATCH_ERROR',
+                'schedule_id' => $schedule->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+
+        Log::info('=== PUSH NOTIFICATION DEBUG: Schedule Creation Completed ===', [
+            'step' => 'SCHEDULE_CREATE_COMPLETE',
+            'schedule_id' => $schedule->id,
+            'next_step' => 'Job will be processed by queue worker'
+        ]);
 
         return redirect()->route("admin.list-schedule");
     }
