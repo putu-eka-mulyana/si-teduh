@@ -44,7 +44,7 @@
                         <th class="px-6 py-3">Dokter/Perawat</th>
                         <th class="px-6 py-3 min-w-[200px]">Status Notifikasi</th>
                         <th class="px-6 py-3">Action</th>
-                        <th class="px-6 py-3 max-w-[100px]">Pesan</th>
+                        {{-- <th class="px-6 py-3 max-w-[100px]">Pesan</th> --}}
                     </tr>
                 </thead>
                 <tbody>
@@ -83,7 +83,7 @@
                                     </form>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 max-w-[100px]">{{ $schedule->message }}</td>
+                            {{-- <td class="px-6 py-4 max-w-[100px]">{{ $schedule->message }}</td> --}}
                         </tr>
                     @endforeach
                 </tbody>
