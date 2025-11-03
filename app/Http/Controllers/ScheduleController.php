@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\SendWebPushNotificationJob;
 use App\Models\Schedule;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -104,16 +105,36 @@ class ScheduleController extends Controller
             'queue_name' => config('queue.connections.' . config('queue.default') . '.queue', 'default')
         ]);
 
-        // Kirim web push notification ke user
+        // Kirim web push notification ke user (1 jam sebelum jadwal)
+        $scheduleDateTime = Carbon::parse($schedule->datetime);
+        $notificationTime = $scheduleDateTime->copy()->subHour(); // 1 jam sebelum jadwal
+
         Log::info('=== PUSH NOTIFICATION DEBUG: Dispatching Job to Queue ===', [
             'step' => 'JOB_DISPATCH_START',
             'schedule_id' => $schedule->id,
             'job_class' => 'SendWebPushNotificationJob',
+            'schedule_datetime' => $schedule->datetime,
+            'notification_scheduled_for' => $notificationTime->toDateTimeString(),
+            'current_time' => now()->toDateTimeString(),
+            'delay_until' => $notificationTime->toDateTimeString(),
             'before_dispatch' => true
         ]);
 
         try {
-            SendWebPushNotificationJob::dispatch($schedule);
+            // Jika waktu notifikasi sudah lewat atau kurang dari 1 menit lagi, kirim langsung
+            if ($notificationTime->isPast() || $notificationTime->diffInMinutes(now()) < 1) {
+                Log::info('=== PUSH NOTIFICATION DEBUG: Notification time passed or too close, sending immediately ===', [
+                    'step' => 'IMMEDIATE_DISPATCH',
+                    'schedule_id' => $schedule->id,
+                    'notification_time' => $notificationTime->toDateTimeString(),
+                    'current_time' => now()->toDateTimeString(),
+                ]);
+                SendWebPushNotificationJob::dispatch($schedule);
+            } else {
+                // Jadwalkan job untuk 1 jam sebelum jadwal
+                SendWebPushNotificationJob::dispatch($schedule)
+                    ->delay($notificationTime);
+            }
 
             Log::info('=== PUSH NOTIFICATION DEBUG: Job Dispatched Successfully ===', [
                 'step' => 'JOB_DISPATCHED',
@@ -121,6 +142,7 @@ class ScheduleController extends Controller
                 'job_class' => 'SendWebPushNotificationJob',
                 'queue_connection' => config('queue.default'),
                 'queue_name' => config('queue.connections.' . config('queue.default') . '.queue', 'default'),
+                'notification_scheduled_for' => $notificationTime->toDateTimeString(),
                 'timestamp' => now()->toDateTimeString(),
                 'note' => 'Job ID will be available in job handle() method'
             ]);
