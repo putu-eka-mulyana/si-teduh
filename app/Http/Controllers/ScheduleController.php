@@ -106,32 +106,67 @@ class ScheduleController extends Controller
         ]);
 
         // Kirim web push notification ke user (1 jam sebelum jadwal)
-        $scheduleDateTime = Carbon::parse($schedule->datetime);
+        // Parse datetime dengan timezone aplikasi (Asia/Makassar)
+        // Jika datetime dari database tidak ada timezone, asumsikan timezone aplikasi
+        $appTimezone = config('app.timezone');
+        $scheduleDateTime = Carbon::parse($schedule->datetime, $appTimezone);
         $notificationTime = $scheduleDateTime->copy()->subHour(); // 1 jam sebelum jadwal
+        $currentTime = now($appTimezone);
+
+        // Hitung selisih waktu dalam menit
+        $minutesUntilNotification = $currentTime->diffInMinutes($notificationTime, false);
+        $isPast = $notificationTime->isPast();
 
         Log::info('=== PUSH NOTIFICATION DEBUG: Dispatching Job to Queue ===', [
             'step' => 'JOB_DISPATCH_START',
             'schedule_id' => $schedule->id,
             'job_class' => 'SendWebPushNotificationJob',
             'schedule_datetime' => $schedule->datetime,
+            'schedule_datetime_parsed' => $scheduleDateTime->toDateTimeString(),
+            'schedule_datetime_timezone' => $scheduleDateTime->timezone->getName(),
             'notification_scheduled_for' => $notificationTime->toDateTimeString(),
-            'current_time' => now()->toDateTimeString(),
-            'delay_until' => $notificationTime->toDateTimeString(),
+            'notification_timezone' => $notificationTime->timezone->getName(),
+            'current_time' => $currentTime->toDateTimeString(),
+            'current_timezone' => $currentTime->timezone->getName(),
+            'minutes_until_notification' => $minutesUntilNotification,
+            'is_past' => $isPast,
+            'app_timezone' => config('app.timezone'),
             'before_dispatch' => true
         ]);
 
         try {
-            // Jika waktu notifikasi sudah lewat atau kurang dari 1 menit lagi, kirim langsung
-            if ($notificationTime->isPast() || $notificationTime->diffInMinutes(now()) < 1) {
+            // Jika waktu notifikasi sudah lewat (lebih dari 1 menit yang lalu) atau kurang dari 1 menit lagi, kirim langsung
+            // Minutes negative = sudah lewat, positive = belum tiba
+            if ($isPast && abs($minutesUntilNotification) > 1) {
+                // Jika sudah lewat lebih dari 1 menit, lewati (tidak perlu kirim notifikasi yang sudah lewat)
+                Log::warning('=== PUSH NOTIFICATION DEBUG: Notification time passed more than 1 minute ago, skipping ===', [
+                    'step' => 'SKIP_NOTIFICATION',
+                    'schedule_id' => $schedule->id,
+                    'notification_time' => $notificationTime->toDateTimeString(),
+                    'current_time' => $currentTime->toDateTimeString(),
+                    'minutes_passed' => abs($minutesUntilNotification),
+                ]);
+            } elseif ($isPast || $minutesUntilNotification <= 1) {
+                // Jika sudah lewat kurang dari 1 menit atau kurang dari 1 menit lagi, kirim langsung
                 Log::info('=== PUSH NOTIFICATION DEBUG: Notification time passed or too close, sending immediately ===', [
                     'step' => 'IMMEDIATE_DISPATCH',
                     'schedule_id' => $schedule->id,
                     'notification_time' => $notificationTime->toDateTimeString(),
-                    'current_time' => now()->toDateTimeString(),
+                    'current_time' => $currentTime->toDateTimeString(),
+                    'minutes_until_notification' => $minutesUntilNotification,
+                    'is_past' => $isPast,
                 ]);
                 SendWebPushNotificationJob::dispatch($schedule);
             } else {
                 // Jadwalkan job untuk 1 jam sebelum jadwal
+                Log::info('=== PUSH NOTIFICATION DEBUG: Scheduling notification with delay ===', [
+                    'step' => 'SCHEDULE_DELAY',
+                    'schedule_id' => $schedule->id,
+                    'notification_time' => $notificationTime->toDateTimeString(),
+                    'current_time' => $currentTime->toDateTimeString(),
+                    'minutes_until_notification' => $minutesUntilNotification,
+                    'delay_seconds' => $currentTime->diffInSeconds($notificationTime, false),
+                ]);
                 SendWebPushNotificationJob::dispatch($schedule)
                     ->delay($notificationTime);
             }
