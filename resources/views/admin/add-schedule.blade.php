@@ -7,7 +7,7 @@
         <div class="h-20"></div>
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-black">Tambah Konseling hee</h2>
+            <h2 class="text-2xl font-bold text-black">Tambah Konseling</h2>
             {{-- tambahkan button tambah pasien dan tambah dokter
             <perawat></perawat> --}}
             <div>
