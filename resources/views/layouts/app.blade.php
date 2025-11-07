@@ -99,6 +99,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('user.view') }}"
+                                class="block py-2 px-3 rounded-sm md:p-0
+                                {{ $currentRoute == 'user.view' ? 'text-white bg-blue-700 md:bg-transparent md:text-blue-700 md:dark:text-blue-500' : 'text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:text-blue-500 md:dark:hover:bg-transparent dark:border-gray-700' }}">
+                                Jadwal Untuk Anda
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('edukasi-hiv') }}"
                                 class="block py-2 px-3 rounded-sm md:p-0
                                 {{ $currentRoute == 'edukasi-hiv' ? 'text-white bg-blue-700 md:bg-transparent md:text-blue-700 md:dark:text-blue-500' : 'text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:text-blue-500 md:dark:hover:bg-transparent dark:border-gray-700' }}">
