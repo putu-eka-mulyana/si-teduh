@@ -7,7 +7,7 @@
         <div class="h-20"></div>
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-black">Tambah Konseling</h2>
+            <h2 class="text-2xl font-bold text-black">Tambah Konseling hee</h2>
             {{-- tambahkan button tambah pasien dan tambah dokter
             <perawat></perawat> --}}
             <div>
@@ -239,7 +239,8 @@
             // Filter live search
             searchInner.addEventListener('input', () => {
                 const q = searchInner.value.trim().toLowerCase();
-                let newData = data.filter(i => i.fullname.toLowerCase().includes(q) || i.position
+                let newData = data.filter(i => i.fullname.toLowerCase().includes(q) || i
+                    .medical_record_number
                     .toLowerCase().includes(q))
                 if (newData.length > 0) {
                     renderList(newData);
@@ -317,7 +318,6 @@
                 const q = searchInner.value.trim().toLowerCase();
                 let newData = data.filter(i => i.fullname.toLowerCase().includes(q) || i.position
                     .toLowerCase().includes(q))
-                console.log("newData " + newData.length)
                 if (newData.length > 0) {
                     renderList(newData);
                 } else {
