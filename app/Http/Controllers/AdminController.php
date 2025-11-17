@@ -6,6 +6,7 @@ use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
@@ -53,14 +54,18 @@ class AdminController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $admin = Admin::with('user')->findOrFail($id);
+
         $request->validate([
             'fullname' => 'required',
-            'phone_number' => 'required',
+            'phone_number' => [
+                'required',
+                Rule::unique('users', 'phone_number')->ignore(optional($admin->user)->id),
+            ],
             'jobtitle' => 'required',
             'password' => 'required|min:6|confirmed',
             "password_confirmation" => 'required_with:password|same:password',
         ]);
-        $admin = Admin::findOrFail($id);
         $admin->user->update([
             'phone_number' => $request->phone_number,
         ]);
