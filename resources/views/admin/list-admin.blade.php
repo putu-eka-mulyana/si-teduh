@@ -188,6 +188,7 @@
                     id="crud-modal-edit-form">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="role" value="ADMIN">
                     <div class="grid gap-4 mb-4 grid-cols-2">
                         <div class="col-span-2">
                             <label for="name"

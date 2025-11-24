@@ -68,6 +68,7 @@ class AdminController extends Controller
         ]);
         $admin->user->update([
             'phone_number' => $request->phone_number,
+            'role' => 'ADMIN', // Pastikan role selalu ADMIN
         ]);
         $admin->update([
             'fullname' => $request->fullname,
