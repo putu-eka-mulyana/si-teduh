@@ -13,7 +13,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $schedules = Schedule::where('patient_id', Auth::user()->id)
+        $schedules = Schedule::where('patient_id', Auth::user()->patient->id)
             ->orderBy('datetime', 'desc')
             ->get();
         return view('user-view', compact('schedules'));
